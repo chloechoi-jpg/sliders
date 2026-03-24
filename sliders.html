@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slider Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#e8edf5;font-family:'Nunito',sans-serif;min-height:100vh;padding:72px 40px 100px;display:flex;flex-direction:column;align-items:center;}
+h1{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#a8b4c4;font-weight:400;margin-bottom:68px;}
+.row{display:flex;gap:48px;align-items:flex-start;margin-bottom:68px;flex-wrap:wrap;justify-content:center;}
+.sw{display:flex;flex-direction:column;align-items:center;}
+.lbl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#a8b8c8;margin-bottom:28px;font-weight:600;}
+.pct{position:absolute;bottom:-24px;font-size:11px;color:#b0bcc8;transform:translateX(-50%);pointer-events:none;white-space:nowrap;}
+
+/* ── scene slider: full illustrated container ── */
+.scene{position:relative;cursor:grab;user-select:none;border-radius:20px;overflow:visible;}
+.scene:active{cursor:grabbing;}
+/* thin bar inside scenes */
+.sbar-wrap{position:absolute;left:0;right:0;border-radius:999px;overflow:hidden;}
+.sbar-bg{position:absolute;inset:0;border-radius:999px;}
+.sbar-fill{height:100%;border-radius:999px;position:relative;overflow:hidden;}
+.shimmer{position:absolute;top:0;left:-60%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 3s ease-in-out infinite;}
+
+/* ── vertical scene ── */
+.vscene{position:relative;cursor:ns-resize;user-select:none;border-radius:20px;overflow:visible;}
+
+@keyframes shimmer{0%{left:-60%}100%{left:120%}}
+@keyframes bubFloat{0%{opacity:.85;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-52px) scale(.1)}}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(.5)}50%{opacity:1;transform:scale(1)}}
+@keyframes flicker{0%,100%{transform:scaleY(1) skewX(0)}30%{transform:scaleY(1.15) skewX(-4deg)}70%{transform:scaleY(.88) skewX(3deg)}}
+@keyframes cloudDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
+@keyframes sway{0%,100%{transform:rotate(-2deg) translateX(-50%)}50%{transform:rotate(2deg) translateX(-50%)}}
+@keyframes rainFall{0%{opacity:0;transform:translateY(-10px)}15%{opacity:.8}100%{opacity:0;transform:translateY(110px)}}
+@keyframes zzzFloat{0%{opacity:0;transform:translate(0,0) scale(.7)}30%{opacity:.9}100%{opacity:0;transform:translate(12px,-28px) scale(1.1)}}
+@keyframes snowFall{0%{opacity:0;transform:translateY(-6px) rotate(0)}20%{opacity:.8}100%{opacity:0;transform:translateY(68px) rotate(200deg)}}
+@keyframes lightFlash{0%,100%{opacity:0}8%,12%{opacity:1}10%{opacity:.25}}
+@keyframes exhaust{0%{opacity:.85;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(22px) scale(2.4)}}
+@keyframes ember{0%{opacity:.9;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--ex),var(--ey)) scale(.2)}}
+@keyframes wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-18px)}}
+@keyframes fishSwim{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes tideRipple{0%{opacity:.6;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1.5)}}
+@keyframes wingFlap{0%{transform:scaleX(1)}50%{transform:scaleX(.2)}100%{transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<h1>Slider Lab &nbsp;·&nbsp; Interactive Specimens</h1>
+
+<!-- ══════════ ROW 1: Snail + Duck ══════════ -->
+<div class="row">
+  <!-- SNAIL -->
+  <div class="sw">
+    <div class="lbl">01 — Snail Resistance</div>
+    <div class="scene" id="snailTrack" style="width:460px;height:14px;margin-top:68px">
+      <div style="position:absolute;inset:0;border-radius:999px;background:rgba(178,196,226,.45)"></div>
+      <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+        <div class="sbar-fill" id="snailFill" style="width:22%;background:linear-gradient(90deg,#9ab8d8,#b4cce8)"><div class="shimmer"></div></div>
+      </div>
+      <canvas id="slimeCanvas" style="position:absolute;top:-54px;left:0;pointer-events:none" height="74"></canvas>
+      <svg id="snailChar" style="position:absolute;top:-58px;pointer-events:none;overflow:visible" width="88" height="72" viewBox="0 0 88 72">
+        <ellipse cx="44" cy="66" rx="34" ry="6" fill="#6a8c78" opacity=".5"/>
+        <ellipse cx="42" cy="55" rx="30" ry="13" fill="#7aa088"/>
+        <circle cx="50" cy="38" r="22" fill="#3a3a54"/>
+        <circle cx="50" cy="38" r="17" fill="none" stroke="#4e4e6a" stroke-width="3.5" opacity=".5"/>
+        <circle cx="50" cy="38" r="10" fill="none" stroke="#4e4e6a" stroke-width="2.5" opacity=".35"/>
+        <circle cx="50" cy="38" r="4" fill="#2e2e44" opacity=".6"/>
+        <ellipse cx="44" cy="29" rx="7" ry="5" fill="rgba(255,255,255,.13)" transform="rotate(-20,44,29)"/>
+        <ellipse cx="18" cy="52" rx="13" ry="11" fill="#7aa088"/>
+        <line x1="13" y1="44" x2="10" y2="33" stroke="#7aa088" stroke-width="3" stroke-linecap="round"/>
+        <line x1="21" y1="42" x2="21" y2="32" stroke="#7aa088" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="10" cy="32" r="4.5" fill="#f2f2f2"/><circle cx="21" cy="31" r="4.5" fill="#f2f2f2"/>
+        <circle cx="10.8" cy="32.2" r="2.4" fill="#22223a"/><circle cx="21.8" cy="31.2" r="2.4" fill="#22223a"/>
+        <circle cx="11.5" cy="31" r="1" fill="white"/><circle cx="22.5" cy="30" r="1" fill="white"/>
+        <path d="M12,58 Q18,63 24,59" stroke="#5a7a68" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="29" width="9" height="5" rx="2.5" fill="#f0c870" transform="rotate(-15,10,31)"/>
+        <line x1="8" y1="31" x2="14" y2="31" stroke="#e0a840" stroke-width=".8" transform="rotate(-15,11,31)"/>
+      </svg>
+      <div class="pct" id="snailPct" style="left:22%">22%</div>
+    </div>
+  </div>
+
+  <!-- DUCK -->
+  <div class="sw">
+    <div class="lbl">02 — Duck Slip</div>
+    <div class="scene" id="duckTrack" style="width:460px;height:14px;margin-top:54px">
+      <div style="position:absolute;inset:0;border-radius:999px;background:rgba(168,218,214,.42)"></div>
+      <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+        <div class="sbar-fill" id="duckFill" style="width:40%;background:linear-gradient(90deg,#5cc0b8,#78d4cc)"><div class="shimmer" style="animation-delay:-.8s"></div></div>
+      </div>
+      <div id="duckBubbles" style="position:absolute;bottom:14px;left:0;right:0;height:56px;pointer-events:none;overflow:visible"></div>
+      <svg id="duckChar" style="position:absolute;top:-46px;pointer-events:none;overflow:visible" width="72" height="56" viewBox="0 0 72 56">
+        <ellipse cx="40" cy="53" rx="30" ry="5" fill="#78d4cc" opacity=".22"/>
+        <ellipse cx="42" cy="38" rx="26" ry="16" fill="#f0c828"/>
+        <ellipse cx="44" cy="43" rx="18" ry="9" fill="#e0b418" opacity=".6"/>
+        <circle cx="16" cy="26" r="14" fill="#f0c828"/>
+        <ellipse cx="3" cy="29" rx="9" ry="5" fill="#e05c38"/>
+        <line x1="3" y1="29" x2="12" y2="29" stroke="#c84820" stroke-width="1.5"/>
+        <circle cx="11" cy="22" r="4.5" fill="#f8f8f8"/>
+        <circle cx="11.5" cy="22.3" r="2.5" fill="#1a1a28"/>
+        <circle cx="12.4" cy="21.2" r="1" fill="white"/>
+      </svg>
+      <div class="pct" id="duckPct" style="left:40%">40%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ROW 2: Domino ══════════ -->
+<div class="row" style="margin-bottom:68px">
+  <div class="sw">
+    <div class="lbl">03 — Domino Cascade</div>
+    <div class="scene" id="dominoTrack" style="width:680px;height:14px;margin-top:58px">
+      <div style="position:absolute;inset:0;border-radius:999px;background:rgba(208,200,190,.48)"></div>
+      <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+        <div class="sbar-fill" id="dominoFill" style="width:28%;background:linear-gradient(90deg,#c0b098,#d4c4aa)"></div>
+      </div>
+      <svg id="dominoSvg" style="position:absolute;top:-54px;left:0;pointer-events:none;overflow:visible" height="66"></svg>
+      <div class="pct" id="dominoPct" style="left:28%">28%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ROW 3: NEW horizontal scenes ══════════ -->
+
+<!-- CAMPFIRE → BONFIRE -->
+<div class="row">
+  <div class="sw">
+    <div class="lbl">04 — Campfire</div>
+    <div class="scene" id="fireTrack" style="width:460px;height:88px">
+      <!-- ground bg -->
+      <div id="fireBg" style="position:absolute;inset:0;border-radius:20px;background:#d8c8a8;overflow:hidden">
+        <div style="position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(180deg,#b8985c,#a07840);border-radius:0 0 20px 20px"></div>
+        <div style="position:absolute;bottom:30px;left:0;right:0;height:12px;background:#c8a860;opacity:.5"></div>
+        <!-- night sky fades in -->
+        <div id="fireNightSky" style="position:absolute;inset:0;background:linear-gradient(180deg,#1a2a4a,#2a3a5a);opacity:0;border-radius:20px"></div>
+        <!-- stars in night sky -->
+        <div id="fireStars" style="position:absolute;inset:0;pointer-events:none"></div>
+        <!-- embers layer -->
+        <div id="embersLayer" style="position:absolute;inset:0;pointer-events:none;overflow:visible"></div>
+        <!-- smoke layer -->
+        <div id="smokeLayer" style="position:absolute;inset:0;pointer-events:none;overflow:visible"></div>
+      </div>
+      <!-- logs -->
+      <svg id="fireLogs" style="position:absolute;bottom:26px;left:50%;transform:translateX(-50%);pointer-events:none;overflow:visible" width="80" height="24" viewBox="0 0 80 24">
+        <ellipse cx="40" cy="20" rx="38" ry="7" fill="#7a5028"/>
+        <ellipse cx="24" cy="16" rx="12" ry="5" fill="#8a5c30" transform="rotate(-20,24,16)"/>
+        <ellipse cx="56" cy="16" rx="12" ry="5" fill="#8a5c30" transform="rotate(20,56,16)"/>
+        <ellipse cx="40" cy="14" rx="10" ry="4" fill="#6a4020"/>
+        <!-- log rings -->
+        <ellipse cx="24" cy="16" rx="5" ry="2" fill="none" stroke="#6a4020" stroke-width="1" opacity=".5" transform="rotate(-20,24,16)"/>
+        <ellipse cx="56" cy="16" rx="5" ry="2" fill="none" stroke="#6a4020" stroke-width="1" opacity=".5" transform="rotate(20,56,16)"/>
+      </svg>
+      <!-- flame SVG (scales with value) -->
+      <svg id="flameSvg" style="position:absolute;bottom:44px;left:50%;transform:translateX(-50%);pointer-events:none;overflow:visible;transform-origin:bottom center" width="80" height="60" viewBox="0 0 80 90">
+        <g style="animation:flicker .4s ease-in-out infinite">
+          <!-- outer flame -->
+          <path id="flameOuter" d="M40,80 Q10,60 18,35 Q24,16 40,8 Q56,16 62,35 Q70,60 40,80Z" fill="#f08020"/>
+          <!-- mid flame -->
+          <path id="flameMid" d="M40,72 Q20,55 26,34 Q32,18 40,14 Q48,18 54,34 Q60,55 40,72Z" fill="#f8b030"/>
+          <!-- inner flame -->
+          <path id="flameInner" d="M40,62 Q28,50 32,36 Q36,26 40,22 Q44,26 48,36 Q52,50 40,62Z" fill="#fff4a0"/>
+          <!-- tiny spark tip -->
+          <ellipse cx="40" cy="14" rx="4" ry="6" fill="#ffffff" opacity=".6"/>
+        </g>
+      </svg>
+      <!-- bar at bottom -->
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.2)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="fireFill" style="width:30%;background:linear-gradient(90deg,#f0a040,#f8c050)"></div>
+        </div>
+        <div class="pct" id="firePct" style="left:30%">30%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIDE / OCEAN -->
+  <div class="sw">
+    <div class="lbl">05 — Tide</div>
+    <div class="scene" id="tideTrack" style="width:460px;height:88px">
+      <div style="position:absolute;inset:0;border-radius:20px;overflow:hidden">
+        <!-- sky -->
+        <div id="tideSky" style="position:absolute;inset:0;background:linear-gradient(180deg,#b8d8f0,#d4e8f8)"></div>
+        <!-- sun/moon -->
+        <svg id="tideSun" style="position:absolute;top:8px;right:20px;pointer-events:none" width="32" height="32" viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="10" fill="#f8d040"/>
+          <g stroke="#f8c020" stroke-width="2" stroke-linecap="round">
+            <line x1="16" y1="1" x2="16" y2="5"/><line x1="16" y1="27" x2="16" y2="31"/>
+            <line x1="1" y1="16" x2="5" y2="16"/><line x1="27" y1="16" x2="31" y2="16"/>
+            <line x1="5" y1="5" x2="8" y2="8"/><line x1="24" y1="24" x2="27" y2="27"/>
+            <line x1="27" y1="5" x2="24" y2="8"/><line x1="8" y1="24" x2="5" y2="27"/>
+          </g>
+        </svg>
+        <!-- shore / sand -->
+        <div id="tideSand" style="position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(180deg,#d8bc88,#c8a870);border-radius:0 0 20px 20px"></div>
+        <!-- water fill (rises) -->
+        <div id="tideWater" style="position:absolute;bottom:0;left:0;right:0;height:12px;background:linear-gradient(180deg,#5ab8e8,#3890c8);border-radius:0 0 20px 20px;overflow:hidden">
+          <!-- wave svg inside water -->
+          <svg id="wavesSvg" style="position:absolute;top:-8px;left:0;width:200%;height:20px" viewBox="0 0 920 20" preserveAspectRatio="none">
+            <path id="wavePath" d="M0,10 Q46,0 92,10 Q138,20 184,10 Q230,0 276,10 Q322,20 368,10 Q414,0 460,10 Q506,20 552,10 Q598,0 644,10 Q690,20 736,10 Q782,0 828,10 Q874,20 920,10 L920,20 L0,20Z" fill="rgba(255,255,255,.3)"/>
+          </svg>
+          <!-- wave anim -->
+          <style>#wavesSvg{animation:wave 2.2s ease-in-out infinite}</style>
+        </div>
+        <!-- crab character -->
+        <svg id="crabChar" style="position:absolute;bottom:28px;pointer-events:none;overflow:visible;transition:bottom .3s" width="52" height="36" viewBox="0 0 52 36">
+          <!-- claws -->
+          <ellipse cx="4" cy="16" rx="5" ry="3.5" fill="#e06040" transform="rotate(-20,4,16)"/>
+          <ellipse cx="48" cy="16" rx="5" ry="3.5" fill="#e06040" transform="rotate(20,48,16)"/>
+          <!-- legs -->
+          <line x1="10" y1="22" x2="4" y2="30" stroke="#e06040" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="16" y1="24" x2="10" y2="34" stroke="#e06040" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="36" y1="24" x2="42" y2="34" stroke="#e06040" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="42" y1="22" x2="48" y2="30" stroke="#e06040" stroke-width="2.2" stroke-linecap="round"/>
+          <!-- body -->
+          <ellipse cx="26" cy="20" rx="19" ry="13" fill="#e86848"/>
+          <!-- shell pattern -->
+          <ellipse cx="26" cy="19" rx="13" ry="9" fill="#f07858" opacity=".5"/>
+          <ellipse cx="26" cy="18" rx="7" ry="5" fill="#f08868" opacity=".4"/>
+          <!-- eyes -->
+          <circle cx="19" cy="13" r="4" fill="#f8f8f8"/>
+          <circle cx="33" cy="13" r="4" fill="#f8f8f8"/>
+          <circle cx="19.5" cy="13.3" r="2.2" fill="#1a1a1a"/>
+          <circle cx="33.5" cy="13.3" r="2.2" fill="#1a1a1a"/>
+          <circle cx="20.2" cy="12.5" r=".9" fill="white"/>
+          <circle cx="34.2" cy="12.5" r=".9" fill="white"/>
+          <!-- happy mouth -->
+          <path id="crabMouth" d="M21,22 Q26,26 31,22" stroke="#c04828" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- bubble when underwater -->
+          <circle id="crabBubble" cx="36" cy="8" r="0" fill="rgba(255,255,255,.6)" stroke="rgba(180,220,255,.7)" stroke-width="1"/>
+        </svg>
+        <!-- fish (appears in deeper water) -->
+        <svg id="fishChar" style="position:absolute;bottom:10px;opacity:0;pointer-events:none;transition:opacity .6s" width="36" height="20" viewBox="0 0 36 20">
+          <polygon points="0,6 8,10 0,14" fill="#f09850"/>
+          <ellipse cx="22" cy="10" rx="14" ry="7" fill="#f0a860"/>
+          <circle cx="30" cy="8" r="2.8" fill="white"/>
+          <circle cx="30.5" cy="8" r="1.5" fill="#1a1a1a"/>
+        </svg>
+      </div>
+      <!-- bar -->
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px;z-index:10">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.25)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="tideFill" style="width:10%;background:linear-gradient(90deg,#5ab8e8,#3890c8)"></div>
+        </div>
+        <div class="pct" id="tidePct" style="left:10%">10%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ROW 4: more horizontal scenes ══════════ -->
+<div class="row">
+
+  <!-- DAY → NIGHT city skyline -->
+  <div class="sw">
+    <div class="lbl">06 — Day / Night</div>
+    <div class="scene" id="dayNightTrack" style="width:460px;height:88px">
+      <div style="position:absolute;inset:0;border-radius:20px;overflow:hidden">
+        <!-- sky gradient (changes via JS) -->
+        <div id="dnSky" style="position:absolute;inset:0;background:linear-gradient(180deg,#7ac0f0,#b8dcf8)"></div>
+        <!-- stars -->
+        <div id="dnStars" style="position:absolute;inset:0;opacity:0"></div>
+        <!-- sun / moon track -->
+        <svg id="dnCelestial" style="position:absolute;top:0;left:0;width:100%;height:60px;pointer-events:none;overflow:visible">
+          <!-- sun arc (left at 0%, right at 50%, gone by 70%) -->
+          <circle id="dnSun" cx="30" cy="14" r="11" fill="#f8d040"/>
+          <g id="dnSunRays" stroke="#f8c020" stroke-width="1.8" stroke-linecap="round">
+            <line x1="30" y1="0" x2="30" y2="3"/><line x1="30" y1="25" x2="30" y2="28"/>
+            <line x1="16" y1="14" x2="13" y2="14"/><line x1="44" y1="14" x2="47" y2="14"/>
+            <line x1="20" y1="4" x2="18" y2="2"/><line x1="40" y1="24" x2="42" y2="26"/>
+            <line x1="40" y1="4" x2="42" y2="2"/><line x1="20" y1="24" x2="18" y2="26"/>
+          </g>
+          <!-- moon -->
+          <path id="dnMoon" d="M420,10 A11,11 0 1 1 420,32 A7,7 0 1 0 420,10Z" fill="#f0e8c0" opacity="0"/>
+        </svg>
+        <!-- clouds -->
+        <svg id="dnCloud1" style="position:absolute;top:8px;left:22%;animation:cloudDrift 5s ease-in-out infinite;pointer-events:none" width="54" height="22" viewBox="0 0 54 22" overflow="visible">
+          <ellipse cx="27" cy="16" rx="25" ry="9" fill="rgba(255,255,255,.8)"/>
+          <ellipse cx="18" cy="12" rx="13" ry="10" fill="rgba(255,255,255,.85)"/>
+          <ellipse cx="37" cy="11" rx="12" ry="9" fill="rgba(255,255,255,.8)"/>
+        </svg>
+        <!-- city skyline (static silhouette) -->
+        <svg style="position:absolute;bottom:0;left:0;width:100%;height:50px;pointer-events:none" viewBox="0 0 460 50" preserveAspectRatio="none">
+          <!-- buildings silhouette -->
+          <path id="buildingSil" d="M0,50 L0,30 L30,30 L30,20 L50,20 L50,15 L60,15 L60,20 L80,20 L80,10 L85,10 L85,5 L90,5 L90,10 L95,10 L95,20 L110,20 L110,28 L130,28 L130,18 L140,18 L140,12 L150,12 L150,18 L165,18 L165,25 L180,25 L180,15 L190,15 L190,8 L198,8 L198,15 L215,15 L215,20 L230,20 L230,25 L250,25 L250,14 L258,14 L258,8 L268,8 L268,14 L280,14 L280,22 L300,22 L300,15 L315,15 L315,25 L330,25 L330,18 L340,18 L340,12 L350,12 L350,18 L365,18 L365,28 L380,28 L380,20 L395,20 L395,30 L420,30 L420,22 L430,22 L430,30 L460,30 L460,50Z" fill="#2a3a5a"/>
+          <!-- windows (lit at night, dark by day - toggled via JS) -->
+          <g id="windowsDay" fill="rgba(255,255,255,.2)">
+            <rect x="83" y="12" width="4" height="3" rx=".5"/><rect x="88" y="12" width="4" height="3" rx=".5"/>
+            <rect x="143" y="15" width="4" height="3" rx=".5"/><rect x="150" y="15" width="4" height="3" rx=".5"/>
+            <rect x="192" y="11" width="4" height="3" rx=".5"/><rect x="192" y="17" width="4" height="3" rx=".5"/>
+            <rect x="260" y="11" width="5" height="3" rx=".5"/><rect x="260" y="17" width="5" height="3" rx=".5"/>
+            <rect x="342" y="15" width="5" height="3" rx=".5"/><rect x="342" y="21" width="5" height="3" rx=".5"/>
+          </g>
+          <g id="windowsNight" fill="rgba(255,220,80,.0)">
+            <rect x="83" y="12" width="4" height="3" rx=".5"/><rect x="88" y="12" width="4" height="3" rx=".5"/>
+            <rect x="83" y="18" width="4" height="3" rx=".5"/><rect x="88" y="18" width="4" height="3" rx=".5"/>
+            <rect x="143" y="15" width="4" height="3" rx=".5"/><rect x="150" y="15" width="4" height="3" rx=".5"/>
+            <rect x="143" y="21" width="4" height="3" rx=".5"/>
+            <rect x="192" y="11" width="4" height="3" rx=".5"/><rect x="192" y="17" width="4" height="3" rx=".5"/>
+            <rect x="197" y="11" width="4" height="3" rx=".5"/>
+            <rect x="260" y="11" width="5" height="3" rx=".5"/><rect x="260" y="17" width="5" height="3" rx=".5"/>
+            <rect x="267" y="14" width="5" height="3" rx=".5"/>
+            <rect x="342" y="15" width="5" height="3" rx=".5"/><rect x="342" y="21" width="5" height="3" rx=".5"/>
+            <rect x="349" y="18" width="5" height="3" rx=".5"/>
+            <rect x="422" y="25" width="4" height="3" rx=".5"/><rect x="428" y="25" width="4" height="3" rx=".5"/>
+          </g>
+        </svg>
+        <!-- ground floor -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:10px;background:#1e2d48;border-radius:0 0 20px 20px"></div>
+      </div>
+      <!-- bar -->
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px;z-index:10">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.18)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="dnFill" style="width:10%;background:linear-gradient(90deg,#f8d040,#5060a8)"></div>
+        </div>
+        <div class="pct" id="dnPct" style="left:10%">10%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLE RIPENING (seed→sapling→apple) -->
+  <div class="sw">
+    <div class="lbl">07 — Apple Life</div>
+    <div class="scene" id="appleTrack" style="width:460px;height:88px">
+      <div style="position:absolute;inset:0;border-radius:20px;overflow:hidden">
+        <div id="appleBg" style="position:absolute;inset:0;background:linear-gradient(180deg,#c8e4f0,#d8ecf8)"></div>
+        <!-- soil -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:28px;background:linear-gradient(180deg,#b09060,#8a7040);border-radius:0 0 20px 20px"></div>
+        <div style="position:absolute;bottom:28px;left:0;right:0;height:8px;background:#c8a860;opacity:.5"></div>
+        <!-- seed (phase 0) -->
+        <svg id="appleSeedEl" style="position:absolute;bottom:28px;pointer-events:none" width="20" height="14" viewBox="0 0 20 14">
+          <ellipse cx="10" cy="9" rx="7" ry="4.5" fill="#6a4820"/>
+          <ellipse cx="10" cy="9" rx="4" ry="2.5" fill="#7a5a2a" opacity=".5"/>
+          <line x1="10" y1="5" x2="10" y2="1" stroke="#5a3810" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <!-- sapling group (phase 1) -->
+        <svg id="appleSaplingEl" style="position:absolute;bottom:28px;opacity:0;pointer-events:none" width="40" height="50" viewBox="0 0 40 50">
+          <rect x="18" y="20" width="4" height="30" rx="2" fill="#7a5028"/>
+          <ellipse cx="20" cy="18" rx="14" ry="12" fill="#6abf5a"/>
+          <ellipse cx="14" cy="22" rx="9" ry="7" fill="#5ab048" transform="rotate(-20,14,22)"/>
+          <ellipse cx="26" cy="22" rx="9" ry="7" fill="#62b850" transform="rotate(20,26,22)"/>
+        </svg>
+        <!-- full tree (phase 2) -->
+        <svg id="appleTreeEl" style="position:absolute;bottom:28px;opacity:0;pointer-events:none" width="80" height="80" viewBox="0 0 80 80">
+          <rect x="36" y="38" width="8" height="42" rx="4" fill="#8a5c30"/>
+          <rect x="37" y="55" width="6" height="28" rx="3" fill="#7a4c20" opacity=".5"/>
+          <circle cx="40" cy="30" r="28" fill="#5ab84a"/>
+          <circle cx="26" cy="24" r="14" fill="#4aac38"/>
+          <circle cx="52" cy="22" r="14" fill="#52b440"/>
+          <circle cx="40" cy="14" r="12" fill="#60bc50"/>
+          <!-- apples on tree -->
+          <circle id="ap1" cx="28" cy="28" r="0" fill="#e83030"/>
+          <circle id="ap2" cx="52" cy="26" r="0" fill="#e03828"/>
+          <circle id="ap3" cx="40" cy="18" r="0" fill="#e83030"/>
+          <circle id="ap4" cx="36" cy="32" r="0" fill="#d82828"/>
+          <circle id="ap5" cx="46" cy="34" r="0" fill="#e03020"/>
+          <!-- apple shine dots -->
+          <circle id="ap1s" cx="26" cy="26" r="0" fill="rgba(255,255,255,.5)"/>
+          <circle id="ap2s" cx="50" cy="24" r="0" fill="rgba(255,255,255,.5)"/>
+          <circle id="ap3s" cx="38" cy="16" r="0" fill="rgba(255,255,255,.5)"/>
+        </svg>
+        <!-- fallen apples on ground -->
+        <div id="fallenApples" style="position:absolute;bottom:28px;left:0;right:0;pointer-events:none"></div>
+      </div>
+      <!-- bar -->
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px;z-index:10">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.2)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="appleFill" style="width:5%;background:linear-gradient(90deg,#88c848,#e83030)"></div>
+        </div>
+        <div class="pct" id="applePct" style="left:5%">5%</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ ROW 5: more horizontal + rainstorm ══════════ -->
+<div class="row">
+
+  <!-- RAINSTORM — starts clear, ends heavy storm -->
+  <div class="sw">
+    <div class="lbl">08 — Rainstorm</div>
+    <div class="scene" id="rainScene" style="width:460px;height:100px">
+      <div id="rainBg" style="position:absolute;inset:0;border-radius:20px;overflow:hidden;background:#d8e4ee">
+        <div id="lightningFlash" style="position:absolute;inset:0;background:rgba(255,255,220,.9);opacity:0;border-radius:20px;pointer-events:none;z-index:8"></div>
+        <div id="rainDropsLayer" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2"></div>
+        <svg id="stormCloud" style="position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:3" width="110" height="46" viewBox="0 0 110 46" overflow="visible">
+          <ellipse id="cb" cx="55" cy="34" rx="48" ry="15" fill="#b8c0cc"/>
+          <ellipse id="cp1" cx="34" cy="26" rx="24" ry="20" fill="#b8c0cc"/>
+          <ellipse id="cp2" cx="55" cy="20" rx="26" ry="22" fill="#c0c8d4"/>
+          <ellipse id="cp3" cx="76" cy="26" rx="22" ry="18" fill="#b8c0cc"/>
+        </svg>
+        <svg id="lightningBolt" style="position:absolute;top:6px;left:50%;transform:translateX(-50%);opacity:0;z-index:6;filter:drop-shadow(0 0 6px rgba(255,255,140,.9));pointer-events:none" width="26" height="46" viewBox="0 0 26 46">
+          <polygon points="17,0 5,22 13,22 9,46 21,18 13,18" fill="#fff176"/>
+        </svg>
+        <div id="rainPuddle" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);height:5px;width:0;background:rgba(90,130,190,.38);border-radius:3px;transition:width .7s"></div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px;z-index:10">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(180,190,210,.35)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="rainFill" style="width:0%;background:linear-gradient(90deg,#90a8d0,#7090c0)"></div>
+        </div>
+        <svg id="umbrellaChar" style="position:absolute;top:-68px;pointer-events:none;overflow:visible" width="76" height="66" viewBox="0 0 76 66">
+          <path d="M38,58 Q38,68 30,68 Q24,68 24,62" stroke="#8a6448" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <line x1="38" y1="28" x2="38" y2="58" stroke="#8a6448" stroke-width="3" stroke-linecap="round"/>
+          <path id="umbrellaCanopy" d="M4,28 Q38,4 72,28 Q57,32 38,28 Q19,32 4,28Z" fill="#7090d0"/>
+          <path d="M4,28 Q21,36 38,28" fill="#6080c0" opacity=".35"/>
+          <path d="M38,28 Q55,36 72,28" fill="#6080c0" opacity=".3"/>
+          <line x1="4" y1="28" x2="38" y2="7" stroke="rgba(255,255,255,.3)" stroke-width="1.3"/>
+          <line x1="72" y1="28" x2="38" y2="7" stroke="rgba(255,255,255,.3)" stroke-width="1.3"/>
+          <line x1="21" y1="30" x2="38" y2="7" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+          <line x1="55" y1="30" x2="38" y2="7" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+          <path d="M4,28 Q10,35 15,28" fill="#5070b8" opacity=".45"/><path d="M15,28 Q21,35 27,28" fill="#5070b8" opacity=".45"/>
+          <path d="M27,28 Q33,35 38,28" fill="#5070b8" opacity=".45"/><path d="M38,28 Q44,35 50,28" fill="#5070b8" opacity=".45"/>
+          <path d="M50,28 Q56,35 61,28" fill="#5070b8" opacity=".45"/><path d="M61,28 Q67,35 72,28" fill="#5070b8" opacity=".45"/>
+        </svg>
+        <div class="pct" id="rainPct" style="left:0%">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEAR HIBERNATION winter→spring -->
+  <div class="sw">
+    <div class="lbl">09 — Hibernation</div>
+    <div class="scene" id="bearScene" style="width:460px;height:100px">
+      <div id="bearBg" style="position:absolute;inset:0;border-radius:20px;overflow:hidden;background:#dde8f2">
+        <div id="snowGround" style="position:absolute;bottom:0;left:0;right:0;height:26px;background:#e8f0f8;border-radius:0 0 20px 20px"></div>
+        <svg id="snowCloud" style="position:absolute;top:4px;left:28px" width="88" height="42" viewBox="0 0 88 42">
+          <ellipse cx="44" cy="30" rx="38" ry="14" fill="#c8d4e0"/>
+          <ellipse cx="28" cy="22" rx="20" ry="17" fill="#c8d4e0"/>
+          <ellipse cx="44" cy="18" rx="22" ry="19" fill="#d0dce8"/>
+          <ellipse cx="60" cy="22" rx="18" ry="16" fill="#c8d4e0"/>
+          <polygon points="22,37 25,48 28,37" fill="#b8d0e8" opacity=".8"/>
+          <polygon points="37,38 40,50 43,38" fill="#b8d0e8" opacity=".8"/>
+          <polygon points="52,38 55,47 58,38" fill="#b8d0e8" opacity=".8"/>
+        </svg>
+        <div id="snowLayer" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+        <svg id="springSun" style="position:absolute;top:6px;right:18px;opacity:0;transition:opacity 1s" width="40" height="40" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="11" fill="#f8d040"/>
+          <g stroke="#f8c020" stroke-width="2.4" stroke-linecap="round">
+            <line x1="20" y1="3" x2="20" y2="7"/><line x1="20" y1="33" x2="20" y2="37"/>
+            <line x1="3" y1="20" x2="7" y2="20"/><line x1="33" y1="20" x2="37" y2="20"/>
+            <line x1="7.5" y1="7.5" x2="10.3" y2="10.3"/><line x1="29.7" y1="29.7" x2="32.5" y2="32.5"/>
+            <line x1="32.5" y1="7.5" x2="29.7" y2="10.3"/><line x1="10.3" y1="29.7" x2="7.5" y2="32.5"/>
+          </g>
+        </svg>
+        <div id="springGrass" style="position:absolute;bottom:0;left:0;right:0;height:26px;background:linear-gradient(180deg,#90c860,#78b040);border-radius:0 0 20px 20px;opacity:0;transition:opacity 1s"></div>
+        <div id="springFlowers" style="position:absolute;bottom:20px;opacity:0;transition:opacity 1.2s;pointer-events:none;width:100%">
+          <svg width="100%" height="18" viewBox="0 0 460 18">
+            <circle cx="70" cy="9" r="4.5" fill="#f8c0d8"/><circle cx="70" cy="9" r="2.5" fill="#f8e040"/>
+            <circle cx="130" cy="7" r="4.5" fill="#f0a0c0"/><circle cx="130" cy="7" r="2.5" fill="#f8e040"/>
+            <circle cx="220" cy="9" r="4.5" fill="#f8c0d8"/><circle cx="220" cy="9" r="2.5" fill="#f8e040"/>
+            <circle cx="320" cy="8" r="4.5" fill="#f0a0c0"/><circle cx="320" cy="8" r="2.5" fill="#f8e040"/>
+            <circle cx="400" cy="9" r="4.5" fill="#f8c0d8"/><circle cx="400" cy="9" r="2.5" fill="#f8e040"/>
+          </svg>
+        </div>
+        <div id="zzzLayer" style="position:absolute;inset:0;pointer-events:none;overflow:visible"></div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:20px;right:20px;height:8px;z-index:10">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(188,200,216,.38)"></div>
+        <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+          <div class="sbar-fill" id="bearFill" style="width:5%;background:linear-gradient(90deg,#b8c8d8,#c8d8e8)"></div>
+        </div>
+        <svg id="bearChar" style="position:absolute;top:-78px;left:calc(5% - 46px);pointer-events:none;overflow:visible" width="92" height="76" viewBox="0 0 92 76">
+          <ellipse cx="52" cy="62" rx="38" ry="20" fill="#c8d8e4" id="bearCave"/>
+          <ellipse cx="48" cy="50" rx="26" ry="18" fill="#9a7a5a"/>
+          <ellipse cx="68" cy="60" rx="9" ry="6" fill="#8a6a4a"/>
+          <circle cx="24" cy="42" r="19" fill="#9a7a5a"/>
+          <circle cx="13" cy="27" r="8" fill="#9a7a5a"/><circle cx="13" cy="27" r="4.5" fill="#c09878" opacity=".6"/>
+          <circle cx="35" cy="25" r="8" fill="#9a7a5a"/><circle cx="35" cy="25" r="4.5" fill="#c09878" opacity=".6"/>
+          <path id="bearEyeL" d="M16,39 Q20,36 24,39" stroke="#5a3a2a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <path id="bearEyeR" d="M24,39 Q28,36 32,39" stroke="#5a3a2a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="20" cy="49" rx="8" ry="5.5" fill="#c09878"/>
+          <ellipse cx="20" cy="46" rx="3.5" ry="2.2" fill="#7a5a3a"/>
+          <path id="bearMouth" d="M16,52 Q20,56 24,52" stroke="#7a5a3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="8" cy="56" rx="11" ry="6" fill="#8a6a4a"/>
+          <circle id="bsn1" cx="16" cy="32" r="2.4" fill="rgba(220,235,250,.8)"/>
+          <circle id="bsn2" cx="35" cy="28" r="1.9" fill="rgba(220,235,250,.7)"/>
+          <circle id="bsn3" cx="8" cy="40" r="1.7" fill="rgba(220,235,250,.6)"/>
+          <g id="bearFlowerHead" opacity="0">
+            <circle cx="14" cy="26" r="3.5" fill="#f8c0d8"/><circle cx="14" cy="26" r="2" fill="#f8e040"/>
+            <circle cx="34" cy="24" r="3" fill="#f0a0c0"/><circle cx="34" cy="24" r="1.8" fill="#f8e040"/>
+          </g>
+        </svg>
+        <div class="pct" id="bearPct" style="left:5%">5%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ROW 6: vertical sliders ══════════ -->
+<div class="row" style="align-items:flex-end">
+
+  <!-- CATERPILLAR → BUTTERFLY (tree) -->
+  <div class="sw">
+    <div class="lbl">10 — Metamorphosis</div>
+    <div class="vscene" id="treeTrack" style="width:100px;height:340px">
+      <svg style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);pointer-events:none" width="100" height="340" viewBox="0 0 100 340" overflow="visible">
+        <rect x="44" y="160" width="12" height="180" rx="6" fill="#a07848"/>
+        <rect x="46" y="200" width="8" height="140" rx="4" fill="#8a6438" opacity=".5"/>
+        <path d="M50,160 Q30,140 18,110" stroke="#a07848" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M50,170 Q70,148 82,116" stroke="#a07848" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M50,145 Q34,125 28,100" stroke="#a07848" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M50,150 Q66,130 72,104" stroke="#a07848" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <g id="leafGroup">
+          <ellipse id="l1" cx="14" cy="102" rx="16" ry="12" fill="#6abf6a" transform="rotate(-30,14,102)"/>
+          <ellipse id="l2" cx="84" cy="108" rx="16" ry="12" fill="#72c872" transform="rotate(25,84,108)"/>
+          <ellipse id="l3" cx="24" cy="88" rx="14" ry="10" fill="#5ab05a" transform="rotate(-15,24,88)"/>
+          <ellipse id="l4" cx="76" cy="96" rx="14" ry="10" fill="#62b862" transform="rotate(20,76,96)"/>
+          <ellipse id="l5" cx="50" cy="72" rx="18" ry="13" fill="#6abf6a"/>
+          <ellipse id="l6" cx="36" cy="78" rx="12" ry="9" fill="#58b058" transform="rotate(-10,36,78)"/>
+          <ellipse id="l7" cx="64" cy="80" rx="12" ry="9" fill="#60b860" transform="rotate(10,64,80)"/>
+          <ellipse id="l8" cx="50" cy="56" rx="14" ry="10" fill="#72c872"/>
+          <ellipse id="l9" cx="30" cy="62" rx="11" ry="8" fill="#5ab05a" transform="rotate(-20,30,62)"/>
+          <ellipse id="l10" cx="70" cy="64" rx="11" ry="8" fill="#64bc64" transform="rotate(18,70,64)"/>
+        </g>
+        <ellipse cx="50" cy="336" rx="36" ry="6" fill="#b8d890" opacity=".5"/>
+      </svg>
+      <svg id="chrysalisSvg" style="position:absolute;left:50%;transform:translate(-50%,50%);pointer-events:none;opacity:0" width="24" height="36" viewBox="0 0 24 36">
+        <ellipse cx="12" cy="20" rx="9" ry="14" fill="#c8a850"/>
+        <ellipse cx="12" cy="20" rx="6" ry="10" fill="#d8b860" opacity=".5"/>
+        <line x1="12" y1="6" x2="12" y2="2" stroke="#a07848" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <svg id="caterpillarChar" style="position:absolute;left:50%;transform:translate(-50%,50%);pointer-events:none;overflow:visible" width="64" height="32" viewBox="0 0 64 32">
+        <circle cx="10" cy="20" r="9" fill="#7ac87a"/><circle cx="24" cy="18" r="9" fill="#72c072"/>
+        <circle cx="38" cy="18" r="9" fill="#7ac87a"/><circle cx="52" cy="20" r="9" fill="#72c072"/>
+        <circle cx="8" cy="14" r="10" fill="#88d888"/>
+        <circle cx="5" cy="11" r="3.5" fill="white"/><circle cx="12" cy="11" r="3.5" fill="white"/>
+        <circle cx="5.6" cy="11.3" r="2" fill="#1a2a1a"/><circle cx="12.6" cy="11.3" r="2" fill="#1a2a1a"/>
+        <circle cx="6.2" cy="10.5" r=".8" fill="white"/><circle cx="13.2" cy="10.5" r=".8" fill="white"/>
+        <line x1="4" y1="5" x2="1" y2="-1" stroke="#88d888" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="11" y1="4" x2="13" y2="-2" stroke="#88d888" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="1" cy="-1" r="2" fill="#a8e8a8"/><circle cx="13" cy="-2" r="2" fill="#a8e8a8"/>
+        <path d="M4,17 Q7,20 11,17" stroke="#4a984a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <line x1="10" y1="27" x2="8" y2="33" stroke="#6ab86a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="24" y1="25" x2="22" y2="31" stroke="#6ab86a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="38" y1="25" x2="36" y2="31" stroke="#6ab86a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="52" y1="27" x2="50" y2="33" stroke="#6ab86a" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <svg id="butterflyChar" style="position:absolute;left:50%;transform:translate(-50%,50%);pointer-events:none;overflow:visible;opacity:0" width="80" height="64" viewBox="0 0 80 64">
+        <g id="bfL"><ellipse cx="18" cy="22" rx="20" ry="16" fill="#f090c0" opacity=".9" transform="rotate(-20,18,22)"/><ellipse cx="22" cy="44" rx="14" ry="10" fill="#f4a8d0" opacity=".85" transform="rotate(-30,22,44)"/><ellipse cx="18" cy="22" rx="12" ry="9" fill="#f8c0d8" opacity=".4" transform="rotate(-20,18,22)"/></g>
+        <g id="bfR"><ellipse cx="62" cy="22" rx="20" ry="16" fill="#f090c0" opacity=".9" transform="rotate(20,62,22)"/><ellipse cx="58" cy="44" rx="14" ry="10" fill="#f4a8d0" opacity=".85" transform="rotate(30,58,44)"/><ellipse cx="62" cy="22" rx="12" ry="9" fill="#f8c0d8" opacity=".4" transform="rotate(20,62,22)"/></g>
+        <ellipse cx="40" cy="34" rx="4" ry="16" fill="#3a2a3a"/>
+        <circle cx="40" cy="17" r="5" fill="#3a2a3a"/>
+        <line x1="40" y1="12" x2="34" y2="4" stroke="#3a2a3a" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="40" y1="12" x2="46" y2="4" stroke="#3a2a3a" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="34" cy="3" r="2.5" fill="#f090c0"/><circle cx="46" cy="3" r="2.5" fill="#f090c0"/>
+      </svg>
+      <div id="leafBites" style="position:absolute;inset:0;pointer-events:none;overflow:visible"></div>
+      <div style="position:absolute;left:50%;transform:translateX(-50%);top:8px;bottom:8px;width:6px;pointer-events:none">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(160,180,140,.22)"></div>
+        <div id="treeFill" style="position:absolute;bottom:0;left:0;right:0;border-radius:999px;background:rgba(90,160,80,.38)"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#b0bcc8;margin-top:18px" id="treePct">0%</div>
+  </div>
+
+  <!-- BALLOON (sky) — thinner bar -->
+  <div class="sw">
+    <div class="lbl">11 — Up &amp; Away</div>
+    <div class="vscene" id="balloonTrack" style="width:110px;height:340px">
+      <div id="skyBg" style="position:absolute;inset:0;border-radius:18px;overflow:hidden">
+        <div id="skyGrad" style="position:absolute;inset:0;background:linear-gradient(to top,#b8d890,#b8d890 18%,#c8ddf0 18%,#b0cce8 100%)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:#b8d890;z-index:1"></div>
+        <div style="position:absolute;bottom:62px;left:0;right:0;height:10px;background:#c8e4a0;z-index:2"></div>
+        <svg style="position:absolute;bottom:58px;left:8%;z-index:3;pointer-events:none" width="22" height="22" viewBox="0 0 22 22">
+          <rect x="2" y="10" width="18" height="12" fill="#d09878"/><polygon points="1,10 11,2 21,10" fill="#c08060"/>
+          <rect x="7" y="14" width="8" height="8" fill="#8ab0c8"/>
+        </svg>
+        <svg style="position:absolute;bottom:58px;right:10%;z-index:3;pointer-events:none" width="16" height="18" viewBox="0 0 16 18">
+          <rect x="1" y="8" width="14" height="10" fill="#c8a870"/><polygon points="0,8 8,1 16,8" fill="#b09060"/>
+          <rect x="4" y="11" width="8" height="7" fill="#7aa0b8"/>
+        </svg>
+        <svg id="ballTreeG" style="position:absolute;bottom:58px;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none" width="80" height="28" viewBox="0 0 80 28">
+          <polygon points="10,0 18,20 2,20" fill="#5a9850"/><rect x="8" y="20" width="4" height="8" fill="#a07040"/>
+          <polygon points="40,2 50,22 30,22" fill="#68a860"/><rect x="38" y="22" width="4" height="6" fill="#a07040"/>
+          <polygon points="68,0 76,18 60,18" fill="#5a9850"/><rect x="66" y="18" width="4" height="10" fill="#a07040"/>
+        </svg>
+        <div id="ballStars" style="position:absolute;inset:0;opacity:0;transition:opacity 1.2s;z-index:4"></div>
+        <svg id="bCloud1" style="position:absolute;top:38%;left:4%;animation:cloudDrift 4s ease-in-out infinite;z-index:5" width="58" height="24" viewBox="0 0 58 24" overflow="visible">
+          <ellipse cx="29" cy="17" rx="27" ry="10" fill="rgba(255,255,255,.76)"/>
+          <ellipse cx="19" cy="12" rx="14" ry="11" fill="rgba(255,255,255,.82)"/>
+          <ellipse cx="39" cy="11" rx="13" ry="10" fill="rgba(255,255,255,.78)"/>
+        </svg>
+        <svg id="bCloud2" style="position:absolute;top:20%;right:3%;animation:cloudDrift 5.5s ease-in-out infinite reverse;z-index:5" width="46" height="20" viewBox="0 0 46 20" overflow="visible">
+          <ellipse cx="23" cy="14" rx="21" ry="8" fill="rgba(255,255,255,.62)"/>
+          <ellipse cx="15" cy="10" rx="11" ry="8" fill="rgba(255,255,255,.68)"/>
+          <ellipse cx="32" cy="9" rx="10" ry="7" fill="rgba(255,255,255,.62)"/>
+        </svg>
+        <svg id="bMoon" style="position:absolute;top:12%;left:10%;opacity:0;transition:opacity 1.2s;z-index:5" width="26" height="26" viewBox="0 0 26 26">
+          <circle cx="13" cy="13" r="12" fill="#f0e8c0"/>
+          <circle cx="9" cy="9" r="3" fill="rgba(180,168,100,.4)"/>
+          <circle cx="17" cy="16" r="2.2" fill="rgba(180,168,100,.3)"/>
+        </svg>
+      </div>
+      <!-- THIN 6px bar -->
+      <div style="position:absolute;left:50%;transform:translateX(-50%);top:10px;bottom:70px;width:6px;z-index:10;pointer-events:none">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.2)"></div>
+        <div id="ballFill" style="position:absolute;bottom:0;left:0;right:0;border-radius:999px;background:rgba(255,255,255,.45)"></div>
+      </div>
+      <svg id="ballChar" style="position:absolute;left:50%;z-index:10;transform:translate(-50%,50%);pointer-events:none;overflow:visible" width="56" height="80" viewBox="0 0 56 80">
+        <path d="M28,74 Q24,62 28,52" stroke="rgba(120,100,90,.6)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse id="ballBody" cx="28" cy="28" rx="22" ry="26" fill="#f07070"/>
+        <ellipse cx="20" cy="15" rx="7" ry="9" fill="rgba(255,255,255,.26)" transform="rotate(-20,20,15)"/>
+        <circle cx="18" cy="12" r="3" fill="rgba(255,255,255,.38)"/>
+        <ellipse cx="28" cy="53" rx="4" ry="3" fill="#d05050"/>
+        <path d="M8,24 Q28,16 48,24" stroke="rgba(255,255,255,.2)" stroke-width="2.5" fill="none"/>
+      </svg>
+      <div id="ballAlt" style="position:absolute;right:-30px;bottom:70px;font-size:9px;letter-spacing:.08em;color:#a8b8c8;text-transform:uppercase;writing-mode:vertical-rl;z-index:10">ground</div>
+    </div>
+    <div style="font-size:11px;color:#b0bcc8;margin-top:18px" id="ballPct">0%</div>
+  </div>
+
+  <!-- ROCKET — thinner bar -->
+  <div class="sw">
+    <div class="lbl">12 — Launch</div>
+    <div class="vscene" id="rocketTrack" style="width:110px;height:340px">
+      <div id="spaceBg" style="position:absolute;inset:0;border-radius:18px;overflow:hidden">
+        <div id="spaceGrad" style="position:absolute;inset:0;background:linear-gradient(to top,#7ab8e0 0%,#5898c8 15%,#2a4870 40%,#0a1830 100%)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:52px;background:linear-gradient(180deg,#5aa0d8,#3a80b8);border-radius:0 0 18px 18px;z-index:2;overflow:hidden">
+          <div style="position:absolute;top:6px;left:8px;width:32px;height:18px;background:rgba(72,168,72,.75);border-radius:50%;transform:rotate(-12deg)"></div>
+          <div style="position:absolute;top:10px;right:10px;width:22px;height:14px;background:rgba(72,168,72,.65);border-radius:50%;transform:rotate(8deg)"></div>
+          <div style="position:absolute;top:2px;left:0;right:0;height:14px;background:linear-gradient(to bottom,rgba(100,190,250,.5),transparent)"></div>
+        </div>
+        <div id="atmoGlow" style="position:absolute;bottom:52px;left:0;right:0;height:36px;background:linear-gradient(to top,rgba(80,180,240,.55),transparent);z-index:2"></div>
+        <div id="rocketStars" style="position:absolute;inset:0;z-index:1"></div>
+        <svg id="moonSvg" style="position:absolute;top:16%;right:10%;opacity:0;transition:opacity 1.4s;z-index:3" width="30" height="30" viewBox="0 0 30 30">
+          <circle cx="15" cy="15" r="13" fill="#f0e8c0"/>
+          <circle cx="10" cy="10" r="3.5" fill="rgba(180,168,100,.4)"/>
+          <circle cx="20" cy="18" r="2.8" fill="rgba(180,168,100,.3)"/>
+        </svg>
+        <svg id="planetSvg" style="position:absolute;top:8%;left:8%;opacity:0;transition:opacity 1.8s;z-index:3" width="26" height="26" viewBox="0 0 26 26">
+          <circle cx="13" cy="13" r="11" fill="#d08848"/>
+          <ellipse cx="13" cy="13" rx="18" ry="4" fill="none" stroke="rgba(180,120,50,.55)" stroke-width="2.2"/>
+          <path d="M4,11 Q13,7 22,11" stroke="rgba(200,150,80,.4)" stroke-width="1.3" fill="none"/>
+        </svg>
+      </div>
+      <!-- THIN 6px bar -->
+      <div style="position:absolute;left:50%;transform:translateX(-50%);top:10px;bottom:60px;width:6px;z-index:10;pointer-events:none">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.1)"></div>
+        <div id="rocketFill" style="position:absolute;bottom:0;left:0;right:0;border-radius:999px;background:rgba(255,255,255,.28)"></div>
+      </div>
+      <svg id="rocketChar" style="position:absolute;left:50%;z-index:10;transform:translate(-50%,50%);pointer-events:none;overflow:visible" width="40" height="72" viewBox="0 0 40 72">
+        <g id="rocketFlame" style="transform-origin:20px 60px;animation:flicker .35s ease-in-out infinite">
+          <ellipse cx="20" cy="66" rx="8" ry="10" fill="#f09030" opacity=".9"/>
+          <ellipse cx="20" cy="64" rx="5" ry="7" fill="#f8d040" opacity=".9"/>
+          <ellipse cx="16" cy="68" rx="4" ry="6" fill="#f06020" opacity=".6"/>
+          <ellipse cx="24" cy="68" rx="4" ry="6" fill="#f06020" opacity=".6"/>
+        </g>
+        <rect x="12" y="24" width="16" height="28" rx="3" fill="#e8e0f0"/>
+        <path d="M12,24 Q20,4 28,24Z" fill="#d0a0f0"/>
+        <circle cx="20" cy="6" r="3" fill="#c090e0"/>
+        <circle cx="20" cy="34" r="5.5" fill="#a8d8f8"/>
+        <circle cx="20" cy="34" r="3.5" fill="#c0e8ff"/>
+        <circle cx="18.5" cy="32.5" r="1.2" fill="rgba(255,255,255,.7)"/>
+        <path d="M12,44 L4,56 L12,52Z" fill="#d0a0f0"/>
+        <path d="M28,44 L36,56 L28,52Z" fill="#d0a0f0"/>
+        <rect x="12" y="38" width="16" height="4" rx="2" fill="#f0a0b0" opacity=".7"/>
+      </svg>
+      <div id="rocketExhaust" style="position:absolute;inset:0;z-index:9;pointer-events:none;overflow:visible"></div>
+    </div>
+    <div style="font-size:11px;color:#b0bcc8;margin-top:18px" id="rocketPct">0%</div>
+  </div>
+
+  <!-- SUNFLOWER — thinner bar, no face -->
+  <div class="sw">
+    <div class="lbl">13 — Sunflower</div>
+    <div class="vscene" id="sunflowerTrack" style="width:90px;height:340px">
+      <div style="position:absolute;inset:0;border-radius:16px;overflow:hidden">
+        <div id="sunSkyGrad" style="position:absolute;inset:0;background:linear-gradient(to top,#c8e4a8 0%,#d8ecc0 18%,#cce0f0 18%,#b8d0ec 100%)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:62px;background:linear-gradient(180deg,#b08850,#8a6438);border-radius:0 0 16px 16px;z-index:2"></div>
+        <div style="position:absolute;bottom:62px;left:0;right:0;height:12px;background:#c8e4a8;z-index:2"></div>
+        <svg style="position:absolute;top:10%;left:5%;opacity:.65;animation:cloudDrift 7s ease-in-out infinite;z-index:3" width="36" height="14" viewBox="0 0 36 14" overflow="visible">
+          <ellipse cx="18" cy="10" rx="16" ry="6" fill="white"/><ellipse cx="12" cy="7" rx="9" ry="6" fill="white"/><ellipse cx="26" cy="6" rx="8" ry="6" fill="white"/>
+        </svg>
+        <svg style="position:absolute;top:7%;right:7%;z-index:3" width="28" height="28" viewBox="0 0 28 28">
+          <circle cx="14" cy="14" r="7" fill="#f8d040"/>
+          <g stroke="#f8c020" stroke-width="2" stroke-linecap="round">
+            <line x1="14" y1="2" x2="14" y2="5"/><line x1="14" y1="23" x2="14" y2="26"/>
+            <line x1="2" y1="14" x2="5" y2="14"/><line x1="23" y1="14" x2="26" y2="14"/>
+            <line x1="5.5" y1="5.5" x2="7.5" y2="7.5"/><line x1="20.5" y1="20.5" x2="22.5" y2="22.5"/>
+            <line x1="22.5" y1="5.5" x2="20.5" y2="7.5"/><line x1="7.5" y1="20.5" x2="5.5" y2="22.5"/>
+          </g>
+        </svg>
+      </div>
+      <div id="stemDiv" style="position:absolute;bottom:62px;left:50%;transform:translateX(-50%);width:7px;height:0;background:linear-gradient(to top,#5a9040,#72b050);border-radius:4px 4px 0 0;z-index:4"></div>
+      <svg id="stemLeavesSvg" style="position:absolute;bottom:62px;left:50%;transform:translateX(-50%);pointer-events:none;overflow:visible;z-index:4" width="60" height="220" viewBox="0 0 60 220">
+        <ellipse id="sl1" cx="12" cy="170" rx="0" ry="0" fill="#72b850" transform="rotate(-35,12,170)"/>
+        <ellipse id="sl2" cx="48" cy="130" rx="0" ry="0" fill="#80c058" transform="rotate(30,48,130)"/>
+        <ellipse id="sl3" cx="10" cy="90" rx="0" ry="0" fill="#72b850" transform="rotate(-28,10,90)"/>
+      </svg>
+      <svg id="flowerHead" style="position:absolute;left:50%;bottom:62px;transform:translate(-50%,50%);pointer-events:none;overflow:visible;opacity:0;z-index:5" width="66" height="66" viewBox="0 0 66 66">
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(45,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(90,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(135,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(180,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(225,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(270,33,33)"/>
+        <ellipse cx="33" cy="7" rx="7" ry="12" fill="#f8c820" transform="rotate(315,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(45,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(90,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(135,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(180,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(225,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(270,33,33)"/>
+        <ellipse cx="33" cy="16" rx="4" ry="7" fill="#f0b010" opacity=".7" transform="rotate(315,33,33)"/>
+        <circle cx="33" cy="33" r="12" fill="#5a3010"/>
+        <circle cx="33" cy="33" r="9" fill="#6a3a18"/>
+        <circle cx="30" cy="30" r="1.4" fill="#3a1a08" opacity=".8"/>
+        <circle cx="35" cy="29" r="1.4" fill="#3a1a08" opacity=".8"/>
+        <circle cx="37" cy="33" r="1.4" fill="#3a1a08" opacity=".8"/>
+        <circle cx="35" cy="37" r="1.4" fill="#3a1a08" opacity=".8"/>
+        <circle cx="30" cy="36" r="1.4" fill="#3a1a08" opacity=".8"/>
+        <circle cx="28" cy="32" r="1.4" fill="#3a1a08" opacity=".8"/>
+      </svg>
+      <!-- THIN 6px bar -->
+      <div style="position:absolute;left:50%;transform:translateX(-50%);top:10px;bottom:72px;width:6px;z-index:6;pointer-events:none">
+        <div style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.16)"></div>
+        <div id="sunflowerFill" style="position:absolute;bottom:0;left:0;right:0;border-radius:999px;background:rgba(255,255,255,.35)"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#b0bcc8;margin-top:18px" id="sunflowerPct">0%</div>
+  </div>
+
+</div>
+
+<!-- ══════════ ROW 7: stat bars ══════════ -->
+<div class="row" style="margin-bottom:0">
+  <div class="sw">
+    <div class="lbl">14 — Vitality</div>
+    <div style="position:relative;width:320px;height:14px;margin-top:50px">
+      <div style="position:absolute;inset:0;border-radius:999px;background:rgba(240,190,200,.36)"></div>
+      <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+        <div class="sbar-fill" id="heartFill" style="width:30%;background:linear-gradient(90deg,#f0a0b8,#f8bcc8);transition:width .7s cubic-bezier(.34,1.4,.64,1)"><div class="shimmer"></div></div>
+      </div>
+      <svg id="heartChar" style="position:absolute;top:-38px;pointer-events:none;overflow:visible" width="44" height="42" viewBox="0 0 44 42">
+        <path d="M22,38 C22,38 3,23 3,12 C3,6 8,2 14,4.5 C17.5,6 21,10 22,13 C23,10 26.5,6 30,4.5 C36,2 41,6 41,12 C41,23 22,38 22,38Z" fill="#f090a8"/>
+        <path d="M11,9 C11,9 8,12 8,17" stroke="rgba(255,255,255,.55)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="pct" id="heartPct" style="left:30%">30%</div>
+    </div>
+  </div>
+  <div class="sw">
+    <div class="lbl">15 — Energy</div>
+    <div style="position:relative;width:320px;height:14px;margin-top:50px">
+      <div style="position:absolute;inset:0;border-radius:999px;background:rgba(160,220,170,.28)"></div>
+      <div style="position:absolute;inset:0;border-radius:999px;overflow:hidden">
+        <div class="sbar-fill" id="energyFill" style="width:100%;background:linear-gradient(90deg,#78d090,#9ee4b0);transition:width .55s cubic-bezier(.34,1.2,.64,1)"><div class="shimmer" style="animation-delay:-1.4s"></div></div>
+      </div>
+      <svg id="boltChar" style="position:absolute;top:-36px;pointer-events:none;overflow:visible" width="32" height="42" viewBox="0 0 32 42">
+        <polygon points="20,2 6,22 16,22 12,42 26,20 16,20" fill="#68c878"/>
+        <polygon points="20,2 6,22 16,22 12,42 26,20 16,20" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.2" stroke-linejoin="round"/>
+      </svg>
+      <div class="pct" id="energyPct" style="left:100%">100%</div>
+    </div>
+  </div>
+</div>
+<div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#b8c8d8;margin-top:60px">drag the sliders to interact</div>
+
+<script>
+/* ── shared ── */
+let heartVal=30,energyVal=100;
+const heartFill=document.getElementById('heartFill'),energyFill=document.getElementById('energyFill');
+const heartChar=document.getElementById('heartChar'),boltChar=document.getElementById('boltChar');
+const heartPct=document.getElementById('heartPct'),energyPct=document.getElementById('energyPct');
+function rec(a=1){energyVal=Math.max(0,energyVal-1.2*a);heartVal=Math.min(100,heartVal+.9*a);updateStats();}
+function updateStats(){
+  heartFill.style.width=heartVal+'%';energyFill.style.width=energyVal+'%';
+  heartPct.textContent=Math.round(heartVal)+'%';heartPct.style.left=heartVal+'%';
+  energyPct.textContent=Math.round(energyVal)+'%';energyPct.style.left=energyVal+'%';
+  heartChar.style.left=`calc(${heartVal}% - 22px)`;boltChar.style.left=`calc(${energyVal}% - 16px)`;
+  if(energyVal<20)energyFill.style.background='linear-gradient(90deg,#f09898,#f8b0b0)';
+  else if(energyVal<50)energyFill.style.background='linear-gradient(90deg,#f0d068,#f8e888)';
+  else energyFill.style.background='linear-gradient(90deg,#78d090,#9ee4b0)';
+}
+updateStats();
+/* ── drag ── */
+function pH(e,el){const r=el.getBoundingClientRect();return Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width));}
+function pV(e,el){const r=el.getBoundingClientRect();return Math.max(0,Math.min(1,1-((e.touches?e.touches[0].clientY:e.clientY)-r.top)/r.height));}
+function hDrag(el,cb){let d=false;el.addEventListener('mousedown',e=>{d=true;cb(pH(e,el));});el.addEventListener('touchstart',e=>{d=true;cb(pH(e,el));},{passive:true});document.addEventListener('mousemove',e=>{if(d)cb(pH(e,el));});document.addEventListener('touchmove',e=>{if(d)cb(pH(e,el));},{passive:true});document.addEventListener('mouseup',()=>d=false);document.addEventListener('touchend',()=>d=false);}
+function vDrag(el,cb){let d=false;el.addEventListener('mousedown',e=>{d=true;cb(pV(e,el));});el.addEventListener('touchstart',e=>{d=true;cb(pV(e,el));},{passive:true});document.addEventListener('mousemove',e=>{if(d)cb(pV(e,el));});document.addEventListener('touchmove',e=>{if(d)cb(pV(e,el));},{passive:true});document.addEventListener('mouseup',()=>d=false);document.addEventListener('touchend',()=>d=false);}
+
+/* ══ SNAIL ══ */
+const snailTrack=document.getElementById('snailTrack'),snailFill=document.getElementById('snailFill');
+const snailChar=document.getElementById('snailChar'),snailPctEl=document.getElementById('snailPct');
+const slimeCanvas=document.getElementById('slimeCanvas'),sc=slimeCanvas.getContext('2d');
+let snailVal=.22,snailTgt=.22,snailDown=false,slimePts=[];
+function resizeSlime(){slimeCanvas.width=snailTrack.offsetWidth;slimeCanvas.style.width=snailTrack.offsetWidth+'px';}
+resizeSlime();window.addEventListener('resize',resizeSlime);
+function drawSlime(){const W=slimeCanvas.width,H=slimeCanvas.height;sc.clearRect(0,0,W,H);for(let i=1;i<slimePts.length;i++){const a=slimePts[i],b=slimePts[i-1];sc.beginPath();sc.moveTo(b.x,H*.62);sc.lineTo(a.x,H*.62);sc.strokeStyle=`rgba(108,178,98,${a.age*.58})`;sc.lineWidth=4+a.age*5;sc.lineCap='round';sc.stroke();}slimePts.filter(p=>p.drip).forEach(p=>{const dl=Math.min(p.dl,15);if(dl<1)return;sc.beginPath();sc.ellipse(p.x,H*.62+dl*.5,3,dl*.5+1.5,0,0,Math.PI*2);sc.fillStyle=`rgba(88,162,78,${p.age*.42})`;sc.fill();});}
+(function sl(){if(snailDown)snailVal+=(snailTgt-snailVal)*0.018;const p=snailVal*100;snailFill.style.width=p+'%';snailChar.style.left=`calc(${p}% - 44px)`;snailPctEl.style.left=p+'%';snailPctEl.textContent=Math.round(p)+'%';slimePts.forEach(p=>{p.age-=.0022;if(p.drip)p.dl=Math.min(p.dl+.22,15);});slimePts=slimePts.filter(p=>p.age>0);if(snailDown)slimePts.push({x:snailVal*slimeCanvas.width,age:1,drip:Math.random()<.09,dl:0});drawSlime();requestAnimationFrame(sl);})();
+{let d=false;snailTrack.addEventListener('mousedown',e=>{d=true;snailDown=true;snailTgt=pH(e,snailTrack);rec();});snailTrack.addEventListener('touchstart',e=>{d=true;snailDown=true;snailTgt=pH(e,snailTrack);rec();},{passive:true});document.addEventListener('mousemove',e=>{if(d){snailTgt=pH(e,snailTrack);rec(.25);}});document.addEventListener('touchmove',e=>{if(d){snailTgt=pH(e,snailTrack);rec(.25);}},{passive:true});document.addEventListener('mouseup',()=>{d=false;snailDown=false;});document.addEventListener('touchend',()=>{d=false;snailDown=false;});}
+
+/* ══ DUCK ══ */
+const duckTrack=document.getElementById('duckTrack'),duckFill=document.getElementById('duckFill');
+const duckChar=document.getElementById('duckChar'),duckPctEl=document.getElementById('duckPct');
+const duckBubbles=document.getElementById('duckBubbles');
+let duckVal=.40,duckTgt=.40,duckVel=0,duckDown=false;
+function spawnBub(p){const b=document.createElement('div');const sz=5+Math.random()*12;b.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;left:${p*100+(Math.random()-.5)*8}%;bottom:${4+Math.random()*26}px;border-radius:50%;background:rgba(255,255,255,.5);border:1px solid rgba(100,210,200,.5);animation:bubFloat ${.8+Math.random()*.7}s ease-out forwards;pointer-events:none`;duckBubbles.appendChild(b);setTimeout(()=>b.remove(),1600);}
+(function dl(){if(duckDown){duckVel+=(duckTgt-duckVal)*.28;duckVel*=.78;}else duckVel*=.94;duckVal=Math.max(0,Math.min(1,duckVal+duckVel));const p=duckVal*100;duckFill.style.width=p+'%';duckChar.style.left=`calc(${p}% - 52px)`;duckPctEl.style.left=p+'%';duckPctEl.textContent=Math.round(p)+'%';const tilt=Math.max(-18,Math.min(18,duckVel*220));duckChar.style.transform=`rotate(${tilt}deg)`;if(Math.abs(duckVel)>.005&&Math.random()<.35)spawnBub(duckVal);requestAnimationFrame(dl);})();
+{let d=false,t;duckTrack.addEventListener('mousedown',e=>{d=true;duckDown=true;duckTgt=pH(e,duckTrack);rec();});duckTrack.addEventListener('touchstart',e=>{d=true;duckDown=true;duckTgt=pH(e,duckTrack);rec();},{passive:true});document.addEventListener('mousemove',e=>{if(d){duckTgt=pH(e,duckTrack);rec(.3);clearTimeout(t);t=setTimeout(()=>duckDown=false,90);}});document.addEventListener('touchmove',e=>{if(d){duckTgt=pH(e,duckTrack);rec(.3);clearTimeout(t);t=setTimeout(()=>duckDown=false,90);}},{passive:true});document.addEventListener('mouseup',()=>{d=false;duckDown=false;});document.addEventListener('touchend',()=>{d=false;duckDown=false;});}
+
+/* ══ DOMINO ══ */
+const dominoTrack=document.getElementById('dominoTrack'),dominoFill=document.getElementById('dominoFill');
+const dominoSvg=document.getElementById('dominoSvg'),dominoPctEl=document.getElementById('dominoPct');
+let dominoVal=.28;
+function drawDoms(p){const W=dominoTrack.offsetWidth;dominoSvg.style.width=W+'px';const ND=38,sp=W/ND,fT=Math.floor(p*ND);let h='';for(let i=0;i<ND;i++){const cx=i*sp+sp*.45,dH=24+(i%3)*4,dW=6,bY=62,col=i%2===0?'#302c28':'#3e3830';if(i<fT){const ang=Math.min(84,52+(fT-i)*2.6),fa=Math.max(.28,1-(fT-i)*.04);h+=`<rect x="${-dW/2}" y="${-dH}" width="${dW}" height="${dH}" rx="1.5" fill="${col}" transform="translate(${cx},${bY}) rotate(${ang})" opacity="${fa}"/>`;}else{h+=`<rect x="${cx-dW/2}" y="${bY-dH}" width="${dW}" height="${dH}" rx="1.5" fill="${col}"/>`;}}dominoSvg.innerHTML=h;}
+hDrag(dominoTrack,p=>{dominoVal=Math.max(dominoVal,p);dominoFill.style.width=dominoVal*100+'%';dominoPctEl.style.left=dominoVal*100+'%';dominoPctEl.textContent=Math.round(dominoVal*100)+'%';drawDoms(dominoVal);rec(.5);});
+drawDoms(dominoVal);window.addEventListener('resize',()=>drawDoms(dominoVal));
+
+/* ══ CAMPFIRE ══ */
+const fireTrack=document.getElementById('fireTrack'),fireFill=document.getElementById('fireFill');
+const firePctEl=document.getElementById('firePct'),fireBg=document.getElementById('fireBg');
+const flameSvg=document.getElementById('flameSvg'),embersLayer=document.getElementById('embersLayer');
+const fireNightSky=document.getElementById('fireNightSky'),fireStars=document.getElementById('fireStars');
+const smokeLayer=document.getElementById('smokeLayer');
+let fireVal=.3;
+
+// generate stars
+for(let i=0;i<20;i++){const s=document.createElement('div');const sz=1.2+Math.random()*2;s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(255,255,255,.9);left:${Math.random()*100}%;top:${Math.random()*55}%;animation:twinkle ${1+Math.random()*2}s ease-in-out infinite;animation-delay:-${Math.random()*2}s`;fireStars.appendChild(s);}
+
+let emberInt=null,smokeInt=null;
+function spawnEmber(p){
+  const e=document.createElement('div');const sz=2+Math.random()*3;
+  const trackW=fireTrack.offsetWidth;const fx=fireVal*trackW;
+  const ex=(Math.random()-.5)*60,ey=-(30+Math.random()*40);
+  e.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(${Math.random()<.5?'255,120,30':'255,200,50'},.9);left:${fx}px;bottom:44px;--ex:${ex}px;--ey:${ey}px;animation:ember ${.6+Math.random()*.6}s ease-out forwards;pointer-events:none`;
+  embersLayer.appendChild(e);setTimeout(()=>e.remove(),1300);
+}
+function spawnSmoke(p){
+  const s=document.createElement('div');const sz=8+Math.random()*14;
+  const trackW=fireTrack.offsetWidth;const fx=fireVal*trackW+(Math.random()-.5)*10;
+  s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(${180+Math.round(p*50)},${180+Math.round(p*50)},${180+Math.round(p*50)},.3);left:${fx}px;bottom:60px;animation:bubFloat ${1.5+Math.random()}s ease-out forwards;pointer-events:none`;
+  smokeLayer.appendChild(s);setTimeout(()=>s.remove(),2600);
+}
+function setFireIntensity(p){
+  if(emberInt)clearInterval(emberInt);if(smokeInt)clearInterval(smokeInt);
+  if(p<.05)return;
+  const eRate=Math.max(40,220-p*200);emberInt=setInterval(()=>spawnEmber(p),eRate);
+  const sRate=Math.max(300,800-p*500);smokeInt=setInterval(()=>spawnSmoke(p),sRate);
+}
+function updateFire(p){
+  fireVal=p;const pct=p*100;fireFill.style.width=pct+'%';firePctEl.style.left=pct+'%';firePctEl.textContent=Math.round(pct)+'%';
+  // flame scales up
+  const scale=.3+p*.9;const h=Math.round(30+p*60);
+  flameSvg.style.transform=`translateX(-50%) scaleX(${.5+p*.7}) scaleY(${scale})`;
+  flameSvg.style.bottom=(38+p*10)+'px';
+  // sky gets dark
+  fireNightSky.style.opacity=String(p*.85);
+  // background warms to campfire glow
+  const gr=Math.round(216-p*80),gg=Math.round(200-p*90),gb=Math.round(168-p*100);
+  fireBg.style.background=`rgb(${gr},${gg},${gb})`;
+  // glow around fire
+  flameSvg.style.filter=p>.5?`drop-shadow(0 0 ${Math.round(p*18)}px rgba(255,140,30,.7))`:'none';
+  setFireIntensity(p);
+  rec(.4);
+}
+updateFire(.3);
+hDrag(fireTrack,p=>updateFire(p));
+
+/* ══ TIDE ══ */
+const tideTrack=document.getElementById('tideTrack'),tideFill=document.getElementById('tideFill');
+const tidePctEl=document.getElementById('tidePct'),tideWater=document.getElementById('tideWater');
+const crabChar=document.getElementById('crabChar'),fishChar=document.getElementById('fishChar');
+const tideSky=document.getElementById('tideSky'),tideSand=document.getElementById('tideSand');
+let tideVal=.10;
+function updateTide(p){
+  tideVal=p;const pct=p*100;tideFill.style.width=pct+'%';tidePctEl.style.left=pct+'%';tidePctEl.textContent=Math.round(pct)+'%';
+  // water height: 0% = tiny, 100% = covers most of scene
+  const waterH=Math.round(8+p*70);tideWater.style.height=waterH+'px';
+  // crab goes up as water rises, then under water
+  const crabBottom=Math.max(0,waterH-4);
+  crabChar.style.bottom=crabBottom+'px';
+  // crab underwater = show bubble
+  const underwater=p>.55;
+  document.getElementById('crabBubble').setAttribute('r',underwater?String(3+p*2):'0');
+  // fish appears in deeper water
+  fishChar.style.opacity=p>.5?String(Math.min(1,(p-.5)/.2)):'0';
+  fishChar.style.bottom=Math.round(waterH*.4)+'px';
+  fishChar.style.left=`calc(${(1-p)*60+15}% - 18px)`;
+  // sky color
+  const r1=Math.round(184-p*60),g1=Math.round(216-p*40),b1=Math.round(240-p*20);
+  tideSky.style.background=`linear-gradient(180deg,rgb(${r1},${g1},${b1}),rgb(${Math.round(r1+30)},${Math.round(g1+20)},${Math.round(b1+10)}))`;
+  // sand shrinks
+  tideSand.style.height=Math.max(4,32-p*28)+'px';
+  // crab position along bar
+  crabChar.style.left=`calc(${pct}% - 26px)`;
+  rec(.4);
+}
+updateTide(.10);
+hDrag(tideTrack,p=>updateTide(p));
+
+/* ══ DAY/NIGHT ══ */
+const dayNightTrack=document.getElementById('dayNightTrack'),dnFill=document.getElementById('dnFill');
+const dnPctEl=document.getElementById('dnPct'),dnSky=document.getElementById('dnSky');
+const dnSun=document.getElementById('dnSun'),dnSunRays=document.getElementById('dnSunRays');
+const dnMoon=document.getElementById('dnMoon'),dnStars=document.getElementById('dnStars');
+const buildingSil=document.getElementById('buildingSil'),windowsNight=document.getElementById('windowsNight');
+const windowsDay=document.getElementById('windowsDay'),dnCloud1=document.getElementById('dnCloud1');
+let dnVal=.10;
+
+// generate night stars
+for(let i=0;i<30;i++){const s=document.createElement('div');const sz=1+Math.random()*2.2;s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(255,255,255,.9);left:${Math.random()*100}%;top:${Math.random()*60}%;animation:twinkle ${.8+Math.random()*1.5}s ease-in-out infinite;animation-delay:-${Math.random()*2}s`;dnStars.appendChild(s);}
+
+function updateDayNight(p){
+  dnVal=p;const pct=p*100;dnFill.style.width=pct+'%';dnPctEl.style.left=pct+'%';dnPctEl.textContent=Math.round(pct)+'%';
+  // Sky gradient day→sunset→night
+  let sky1,sky2;
+  if(p<.5){const t=p/.5;sky1=`rgb(${Math.round(122-t*80)},${Math.round(192-t*100)},${Math.round(240-t*80)})`;sky2=`rgb(${Math.round(180-t*80)},${Math.round(220-t*100)},${Math.round(248-t*80)})`;}
+  else if(p<.75){const t=(p-.5)/.25;sky1=`rgb(${Math.round(42-t*28)},${Math.round(92-t*68)},${Math.round(160-t*128)})`;sky2=`rgb(${Math.round(100-t*80)},${Math.round(120-t*90)},${Math.round(168-t*120)})`;}
+  else{sky1=`rgb(${Math.round(14)},${Math.round(24)},${Math.round(32)})`;sky2=`rgb(${Math.round(20)},${Math.round(30)},${Math.round(48)})`;}
+  dnSky.style.background=`linear-gradient(180deg,${sky1},${sky2})`;
+  // Sun arc: moves right as day progresses, sets after 60%
+  const sunX=30+p*400,sunY=p<.5?(14+Math.abs(p-.25)*20*2):(14+Math.abs(p-.25)*20*2);
+  const sunOpacity=p<.6?1:Math.max(0,1-(p-.6)/.15);
+  dnSun.setAttribute('cx',String(Math.min(sunX,460)));dnSun.setAttribute('cy',String(Math.max(6,sunY)));
+  dnSun.setAttribute('opacity',String(sunOpacity));
+  if(dnSunRays){dnSunRays.setAttribute('opacity',String(sunOpacity));dnSunRays.setAttribute('transform',`translate(${Math.min(sunX,460)-30},${Math.max(6,sunY)-14})`);}
+  // Moon appears after 65%
+  const moonOp=p>.65?Math.min(1,(p-.65)/.2):0;
+  const moonX=60+(1-p)*360;
+  dnMoon.setAttribute('opacity',String(moonOp));dnMoon.setAttribute('d',`M${moonX},10 A11,11 0 1 1 ${moonX},32 A7,7 0 1 0 ${moonX},10Z`);
+  // Stars
+  dnStars.style.opacity=p>.6?String(Math.min(1,(p-.6)/.25)):'0';
+  // Building silhouette darkens
+  buildingSil.setAttribute('fill',p>.5?`rgb(${Math.round(42-p*20)},${Math.round(58-p*25)},${Math.round(90-p*40)})`:'#2a3a5a');
+  // Windows light up at night
+  const wOp=p>.55?Math.min(1,(p-.55)/.2):0;windowsNight.setAttribute('fill',`rgba(255,220,80,${wOp})`);
+  // Clouds fade at night
+  dnCloud1.style.opacity=String(Math.max(0,1-p*1.8));
+  rec(.4);
+}
+updateDayNight(.10);
+hDrag(dayNightTrack,p=>updateDayNight(p));
+
+/* ══ APPLE LIFE ══ */
+const appleTrack=document.getElementById('appleTrack'),appleFill=document.getElementById('appleFill');
+const applePctEl=document.getElementById('applePct');
+const appleSeed=document.getElementById('appleSeedEl'),appleSapling=document.getElementById('appleSaplingEl');
+const appleTree=document.getElementById('appleTreeEl'),fallenApples=document.getElementById('fallenApples');
+const ap=['ap1','ap2','ap3','ap4','ap5'],aps=['ap1s','ap2s','ap3s'];
+let appleVal=.05;
+
+function updateApple(p){
+  appleVal=p;const pct=p*100;appleFill.style.width=pct+'%';applePctEl.style.left=pct+'%';applePctEl.textContent=Math.round(pct)+'%';
+  // bar fill color: green→red as apple ripens
+  const r=Math.round(136-p*p*100),g=Math.round(200-p*152),b=Math.round(72-p*60);
+  appleFill.style.background=`linear-gradient(90deg,rgb(${r+20},${g+20},${b}),rgb(${Math.round(232*p+30*(1-p))},${Math.round(48*p+160*(1-p))},${Math.round(48*p+72*(1-p))}))`;
+  // position characters
+  const trackW=appleTrack.offsetWidth-40;const cx=20+p*trackW;
+  appleSeed.style.left=(cx-10)+'px';appleSapling.style.left=(cx-20)+'px';appleTree.style.left=(cx-40)+'px';
+  // phase transitions
+  if(p<.25){
+    appleSeed.style.opacity='1';appleSapling.style.opacity='0';appleTree.style.opacity='0';
+    const sc=Math.min(1,p/.2);appleSeed.style.transform=`scale(${sc})`;
+  } else if(p<.5){
+    const t=(p-.25)/.25;
+    appleSeed.style.opacity=String(1-t*2);appleSapling.style.opacity=String(Math.min(1,t*2));appleTree.style.opacity='0';
+    appleSapling.style.transform=`scaleY(${.2+t*.8})`;
+  } else {
+    const t2=(p-.5)/.3;appleSeed.style.opacity='0';appleSapling.style.opacity=String(Math.max(0,1-t2*2));
+    appleTree.style.opacity=String(Math.min(1,t2*1.5));
+    // Apples grow on tree after 75%
+    ap.forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;const thresh=.72+i*.04;const sz=p>thresh?Math.min(6,(p-thresh)/.06*6):0;el.setAttribute('r',sz);});
+    aps.forEach((id,i)=>{const el=document.getElementById(id);if(!el)return;const thresh=.74+i*.04;const sz=p>thresh?Math.min(2.5,(p-thresh)/.05*2.5):0;el.setAttribute('r',sz);});
+  }
+  // Sky bg warms as tree grows (morning light→golden hour)
+  const skR=Math.round(200+p*40),skG=Math.round(228+p*10),skB=Math.round(240-p*20);
+  document.getElementById('appleBg').style.background=`linear-gradient(180deg,rgb(${skR},${skG},${skB}),rgb(${Math.round(skR+18)},${Math.round(skG+12)},${Math.round(skB+8)}))`;
+  rec(.4);
+}
+updateApple(.05);
+hDrag(appleTrack,p=>updateApple(p));
+
+/* ══ RAIN ══ */
+const rainScene=document.getElementById('rainScene'),rainFill=document.getElementById('rainFill');
+const umbrellaChar=document.getElementById('umbrellaChar'),rainDropsLayer=document.getElementById('rainDropsLayer');
+const rainPctEl=document.getElementById('rainPct'),rainBg=document.getElementById('rainBg');
+const stormCloud=document.getElementById('stormCloud'),lightningFlash=document.getElementById('lightningFlash');
+const lightningBolt=document.getElementById('lightningBolt'),rainPuddle=document.getElementById('rainPuddle');
+const cb_=document.getElementById('cb'),cp1_=document.getElementById('cp1'),cp2_=document.getElementById('cp2'),cp3_=document.getElementById('cp3');
+let rainInterval=null,lightningInterval=null;
+function spawnRainDrop(p){const d=document.createElement('div');const heavy=p>.6;const w=heavy?2:1.5,h=heavy?(12+p*10):(7+p*5);d.style.cssText=`position:absolute;width:${w}px;height:${h}px;border-radius:1px;background:rgba(${heavy?'90,120,190':'130,160,220'},.${heavy?8:6});left:${Math.random()*100}%;top:-2px;transform:skewX(${heavy?-8:0}deg);animation:rainFall ${heavy?.18+Math.random()*.14:.28+Math.random()*.18}s linear forwards;pointer-events:none`;rainDropsLayer.appendChild(d);setTimeout(()=>d.remove(),550);}
+function triggerLightning(){lightningFlash.style.animation='none';lightningFlash.offsetHeight;lightningFlash.style.animation='lightFlash .5s ease-out forwards';lightningBolt.style.opacity='1';setTimeout(()=>lightningBolt.style.opacity='0',380);}
+hDrag(rainScene,p=>{
+  rainFill.style.width=(p*100)+'%';
+  umbrellaChar.style.left=`calc(${p*100}% - 38px)`;
+  rainPctEl.style.left=(p*100)+'%';rainPctEl.textContent=Math.round(p*100)+'%';
+  // sky darkens
+  const dr=Math.round(216-p*88),dg=Math.round(228-p*88),db=Math.round(238-p*68);rainBg.style.background=`rgb(${dr},${dg},${db})`;
+  // cloud grows + darkens
+  const cr=Math.round(184-p*75),cg=Math.round(192-p*78),cbcol=Math.round(204-p*72);const col=`rgb(${cr},${cg},${cbcol})`;
+  cb_.setAttribute('fill',col);cp1_.setAttribute('fill',col);cp3_.setAttribute('fill',col);cp2_.setAttribute('fill',`rgb(${cr+8},${cg+8},${cbcol+10})`);
+  cb_.setAttribute('rx',String(48+p*22));cp1_.setAttribute('rx',String(24+p*12));cp2_.setAttribute('rx',String(26+p*14));cp3_.setAttribute('rx',String(22+p*10));
+  // umbrella color
+  const ur=Math.round(112-p*28),ug=Math.round(144-p*44),ubcol=Math.round(208-p*30);document.getElementById('umbrellaCanopy').setAttribute('fill',`rgb(${ur},${ug},${ubcol})`);
+  // lightning
+  lightningBolt.style.display=p>.68?'block':'none';
+  if(lightningInterval)clearInterval(lightningInterval);if(p>.68){const lr=Math.max(1600,5500-p*5000);lightningInterval=setInterval(triggerLightning,lr);}
+  // puddle
+  rainPuddle.style.width=(p*200)+'px';rainPuddle.style.height=(3+p*7)+'px';
+  // rain rate — starts at 0
+  if(rainInterval)clearInterval(rainInterval);
+  if(p<.04)return;
+  const rate=Math.max(20,260-p*250);rainInterval=setInterval(()=>{spawnRainDrop(p);if(p>.55)spawnRainDrop(p);if(p>.75)spawnRainDrop(p);},rate);
+  rec(.4);
+});
+
+/* ══ BEAR ══ */
+const bearScene_=document.getElementById('bearScene'),bearFill_=document.getElementById('bearFill');
+const bearChar_=document.getElementById('bearChar'),bearPctEl_=document.getElementById('bearPct');
+const zzzLayer_=document.getElementById('zzzLayer'),snowLayer_=document.getElementById('snowLayer');
+const snowCloud_=document.getElementById('snowCloud'),snowGround_=document.getElementById('snowGround');
+const springSun_=document.getElementById('springSun'),springGrass_=document.getElementById('springGrass');
+const springFlowers_=document.getElementById('springFlowers'),bearBg_=document.getElementById('bearBg');
+const bEyeL=document.getElementById('bearEyeL'),bEyeR=document.getElementById('bearEyeR');
+const bMouth=document.getElementById('bearMouth'),bFlowers=document.getElementById('bearFlowerHead');
+const bCave=document.getElementById('bearCave');
+const bsn=[document.getElementById('bsn1'),document.getElementById('bsn2'),document.getElementById('bsn3')];
+let snowInt=null,zzzInt=null;
+function spawnSnow(){const s=document.createElement('div');const sz=3+Math.random()*4.5;s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(220,235,252,.92);left:${Math.random()*100}%;top:-5px;animation:snowFall ${1.1+Math.random()*.9}s linear forwards;pointer-events:none`;snowLayer_.appendChild(s);setTimeout(()=>s.remove(),2200);}
+function spawnZzz(p){const z=document.createElement('div');z.textContent='z';const sz=8+Math.random()*10;z.style.cssText=`position:absolute;font-family:'Nunito',sans-serif;font-size:${sz}px;font-weight:700;color:rgba(130,100,80,.55);left:calc(${p*100}% - 18px);bottom:12px;animation:zzzFloat ${1+Math.random()*.5}s ease-out forwards;pointer-events:none`;zzzLayer_.appendChild(z);setTimeout(()=>z.remove(),1700);}
+function setBear(p){
+  const pct=p*100;bearFill_.style.width=pct+'%';bearChar_.style.left=`calc(${pct}% - 46px)`;bearPctEl_.style.left=pct+'%';bearPctEl_.textContent=Math.round(pct)+'%';
+  const t=Math.max(0,Math.min(1,(p-.4)/.25));
+  const sr=Math.round(221+t*22),sg=Math.round(232+t*12),sb=Math.round(242-t*32);
+  bearBg_.style.background=`rgb(${sr},${sg},${sb})`;
+  snowCloud_.style.opacity=String(Math.max(0,1-t*1.5));
+  snowGround_.style.opacity=String(Math.max(0,1-t*1.5));
+  springGrass_.style.opacity=String(Math.max(0,(t-.25)/.75));
+  springSun_.style.opacity=String(Math.max(0,(t-.15)/.7));
+  springFlowers_.style.opacity=String(Math.max(0,(t-.45)/.55));
+  // snow on bear fades
+  const sOp=Math.max(0,1-t*2.5);bsn.forEach(s=>{if(s)s.style.opacity=sOp;});
+  // eyes open
+  if(p<.5){bEyeL.setAttribute('d','M16,39 Q20,36 24,39');bEyeR.setAttribute('d','M24,39 Q28,36 32,39');}
+  else{const eo=Math.min(1,(p-.5)/.22);bEyeL.setAttribute('d',`M${16+eo*2},${39-eo*3} Q20,${36-eo*3} ${24-eo*2},${39-eo*3}`);bEyeR.setAttribute('d',`M${24+eo*2},${39-eo*3} Q28,${36-eo*3} ${32-eo*2},${39-eo*3}`);}
+  if(p>.62){const sm=Math.min(1,(p-.62)/.22);bMouth.setAttribute('d',`M${14+sm*2},${52-sm*4} Q20,${56+sm*3} ${26-sm*2},${52-sm*4}`);}
+  bCave.setAttribute('opacity',String(Math.max(0,1-t*1.8)));
+  bFlowers.setAttribute('opacity',String(Math.max(0,(p-.65)/.35)));
+  if(zzzInt)clearInterval(zzzInt);if(p<.58){const zr=Math.max(280,850-p*900);zzzInt=setInterval(()=>spawnZzz(p),zr);spawnZzz(p);}
+  if(snowInt)clearInterval(snowInt);if(p<.48){const sr2=Math.max(100,380-p*500);snowInt=setInterval(spawnSnow,sr2);spawnSnow();}
+  rec(.4);
+}
+setBear(.05);
+hDrag(bearScene_,p=>setBear(p));
+
+/* ══ TREE / CATERPILLAR ══ */
+const treeTrack_=document.getElementById('treeTrack'),treeFill_=document.getElementById('treeFill');
+const treePctEl_=document.getElementById('treePct');
+const catChar_=document.getElementById('caterpillarChar'),chry_=document.getElementById('chrysalisSvg'),bf_=document.getElementById('butterflyChar');
+const leafIds=['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10'];
+const leafRx=[16,16,14,14,18,12,12,14,11,11],leafRy=[12,12,10,10,13,9,9,10,8,8];
+const leafThr=[.08,.12,.18,.22,.28,.34,.4,.52,.62,.75];
+let bfWt=0;
+(function bfw(){bfWt+=.06;const f=Math.abs(Math.sin(bfWt))*18;const lw=document.getElementById('bfL'),rw=document.getElementById('bfR');if(lw)lw.style.transform=`skewX(${f}deg)`;if(rw)rw.style.transform=`skewX(${-f}deg)`;requestAnimationFrame(bfw);})();
+function spawnLB(p){const el=document.createElement('div');el.style.cssText=`position:absolute;width:7px;height:7px;border-radius:50%;background:#6abf6a;left:${25+Math.random()*50}%;bottom:${p*285+20}px;animation:bubFloat .55s ease-out forwards;pointer-events:none;opacity:.8`;document.getElementById('leafBites').appendChild(el);setTimeout(()=>el.remove(),700);}
+function updateTree(p){
+  treePctEl_.textContent=Math.round(p*100)+'%';treeFill_.style.height=(p*100)+'%';
+  const bp=p*285;catChar_.style.bottom=bp+'px';chry_.style.bottom=bp+'px';bf_.style.bottom=bp+'px';
+  leafIds.forEach((id,i)=>{const e=document.getElementById(id);if(!e)return;if(p>leafThr[i]){e.setAttribute('rx','0');e.setAttribute('ry','0');}else{e.setAttribute('rx',leafRx[i]);e.setAttribute('ry',leafRy[i]);}});
+  if(p<.5){catChar_.style.opacity='1';chry_.style.opacity='0';bf_.style.opacity='0';}
+  else if(p<.72){const t=(p-.5)/.22;catChar_.style.opacity=String(1-t*2);chry_.style.opacity=String(Math.min(1,t*2));bf_.style.opacity='0';}
+  else{const t=(p-.72)/.28;catChar_.style.opacity='0';chry_.style.opacity=String(Math.max(0,1-t*3));bf_.style.opacity=String(Math.min(1,t*1.5));}
+  rec(.4);
+}
+updateTree(0);
+vDrag(treeTrack_,p=>{updateTree(p);if(Math.random()<.22)spawnLB(p);});
+
+/* ══ BALLOON ══ */
+const balloonTrack_=document.getElementById('balloonTrack'),ballFill_=document.getElementById('ballFill');
+const ballChar_=document.getElementById('ballChar'),ballPctEl_=document.getElementById('ballPct');
+const skyGrad_=document.getElementById('skyGrad'),ballStars_=document.getElementById('ballStars');
+const bMoon_=document.getElementById('bMoon'),ballAlt_=document.getElementById('ballAlt');
+for(let i=0;i<22;i++){const s=document.createElement('div');const sz=1.4+Math.random()*2.4;s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(255,255,255,.9);left:${Math.random()*100}%;top:${Math.random()*70}%;animation:twinkle ${1+Math.random()*2}s ease-in-out infinite;animation-delay:-${Math.random()*2}s`;ballStars_.appendChild(s);}
+function updateBalloon(p){
+  ballFill_.style.height=(p*100)+'%';ballPctEl_.textContent=Math.round(p*100)+'%';
+  ballChar_.style.bottom=(p*258)+'px';
+  const n=Math.max(0,p-.5)/.5;
+  const gr=Math.round(184-p*60-n*60),gg=Math.round(216-p*30-n*50),gb=Math.round(144+p*100-n*60);
+  const hr=Math.round(200-p*60-n*50),hg=Math.round(220-p*60-n*60),hb=Math.round(232-p*20-n*80);
+  skyGrad_.style.background=`linear-gradient(to top,rgb(${gr},${gg},${gb}),rgb(${hr},${hg},${hb}))`;
+  ballStars_.style.opacity=Math.max(0,p-.6)*2.5;bMoon_.style.opacity=Math.max(0,p-.7)*3.5;
+  document.getElementById('ballTreeG').style.opacity=Math.max(0,1-p*4);
+  const c1=document.getElementById('bCloud1'),c2=document.getElementById('bCloud2');
+  if(c1){c1.style.top=(38-p*20)+'%';c1.style.opacity=String(Math.max(0,1-Math.max(0,p-.5)*3));}
+  if(c2){c2.style.top=(20-p*12)+'%';c2.style.opacity=String(Math.max(0,(.85-Math.max(0,p-.5)*3)));}
+  document.getElementById('ballBody').setAttribute('fill',`hsl(${p*30},80%,${62-p*10}%)`);
+  if(p<.2)ballAlt_.textContent='ground';else if(p<.5)ballAlt_.textContent='clouds';else if(p<.8)ballAlt_.textContent='sky';else ballAlt_.textContent='stars';
+  rec(.4);
+}
+updateBalloon(0);
+vDrag(balloonTrack_,p=>updateBalloon(p));
+
+/* ══ ROCKET ══ */
+const rocketTrack_=document.getElementById('rocketTrack'),rocketFill_=document.getElementById('rocketFill');
+const rocketChar_=document.getElementById('rocketChar'),rocketPctEl_=document.getElementById('rocketPct');
+const spaceGrad_=document.getElementById('spaceGrad'),moonSvg_=document.getElementById('moonSvg');
+const planetSvg_=document.getElementById('planetSvg'),rocketStars_=document.getElementById('rocketStars');
+const rocketExhaust_=document.getElementById('rocketExhaust'),atmoGlow_=document.getElementById('atmoGlow');
+for(let i=0;i<40;i++){const s=document.createElement('div');const sz=1+Math.random()*2.5;s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:white;left:${Math.random()*100}%;top:${Math.random()*85}%;animation:twinkle ${.8+Math.random()*1.8}s ease-in-out infinite;animation-delay:-${Math.random()*2}s;opacity:.08`;rocketStars_.appendChild(s);}
+function spawnExhaust(p){const e=document.createElement('div');const sz=4+Math.random()*9;const bp=p*262+56;e.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:rgba(${Math.random()<.5?'240,150,40':'252,210,50'},.75);left:calc(50% + ${(Math.random()-.5)*14}px);bottom:${bp}px;animation:exhaust .5s ease-out forwards;pointer-events:none`;rocketExhaust_.appendChild(e);setTimeout(()=>e.remove(),600);}
+function updateRocket(p){
+  rocketFill_.style.height=(p*100)+'%';rocketPctEl_.textContent=Math.round(p*100)+'%';rocketChar_.style.bottom=(p*262)+'px';spawnExhaust(p);
+  const er=Math.round(122-p*110),eg=Math.round(184-p*165),eb=Math.round(224-p*190);
+  spaceGrad_.style.background=`linear-gradient(to top,rgb(${er},${eg},${eb}) 0%,rgb(${Math.round(42-p*30)},${Math.round(72-p*55)},${Math.round(112-p*75)}) 25%,rgb(${Math.round(10+p*5)},${Math.round(24+p*5)},${Math.round(48+p*8)}) 100%)`;
+  atmoGlow_.style.opacity=String(Math.max(0,1-p*2.5));
+  Array.from(rocketStars_.children).forEach(s=>s.style.opacity=Math.max(.05,p-.15)*1.3);
+  moonSvg_.style.opacity=Math.max(0,p-.5)*2.5;planetSvg_.style.opacity=Math.max(0,p-.72)*3.5;
+  if(p<.15&&p>.02){const sh=(Math.random()-.5)*3*(1-p/.15);rocketChar_.style.transform=`translate(calc(-50% + ${sh}px),50%)`;}else rocketChar_.style.transform='translate(-50%,50%)';
+  rec(.4);
+}
+updateRocket(0);
+vDrag(rocketTrack_,p=>updateRocket(p));
+
+/* ══ SUNFLOWER ══ */
+const sunflowerTrack_=document.getElementById('sunflowerTrack');
+const stemDiv_=document.getElementById('stemDiv'),sfFill_=document.getElementById('sunflowerFill');
+const sfPctEl_=document.getElementById('sunflowerPct'),fHead_=document.getElementById('flowerHead');
+const maxStemH=215;
+function updateSunflower(p){
+  sfPctEl_.textContent=Math.round(p*100)+'%';sfFill_.style.height=(p*100)+'%';stemDiv_.style.height=(p*maxStemH)+'px';
+  const sl1=document.getElementById('sl1'),sl2=document.getElementById('sl2'),sl3=document.getElementById('sl3');
+  if(p>.28){const s=Math.min(1,(p-.28)/.18);sl1.setAttribute('rx',13*s);sl1.setAttribute('ry',9*s);}else{sl1.setAttribute('rx',0);sl1.setAttribute('ry',0);}
+  if(p>.52){const s=Math.min(1,(p-.52)/.18);sl2.setAttribute('rx',15*s);sl2.setAttribute('ry',10*s);}else{sl2.setAttribute('rx',0);sl2.setAttribute('ry',0);}
+  if(p>.73){const s=Math.min(1,(p-.73)/.15);sl3.setAttribute('rx',12*s);sl3.setAttribute('ry',8*s);}else{sl3.setAttribute('rx',0);sl3.setAttribute('ry',0);}
+  fHead_.style.bottom=(p*maxStemH+62)+'px';
+  if(p>.62){const s=Math.min(1,(p-.62)/.22);fHead_.style.opacity='1';fHead_.style.transform=`translate(-50%,50%) scale(${.2+s*.8})`;}else fHead_.style.opacity='0';
+  rec(.35);
+}
+updateSunflower(0);
+vDrag(sunflowerTrack_,p=>updateSunflower(p));
+</script>
+</body>
+</html>
